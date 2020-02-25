@@ -1,7 +1,7 @@
-package go-wave
+package gowave
 
 type ButtonEvent struct {
-	ID uint8,
-	Action uint8,
-	Timestamp float64,
+	ID        uint8
+	Action    uint8
+	Timestamp float64
 }
