@@ -1,5 +1,7 @@
 package gowave
 
+const DatastreamID = 1
+
 type Datastream struct {
 	Data       SensorData `json:"data"`
 	MotionData MotionData `json:"motionData"`

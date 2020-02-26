@@ -5,10 +5,6 @@ import (
 )
 
 func decodeByteStream(data []byte) gowave.Query {
-	q := gowave.Query{
-		ID:          data[0],
-		PayloadSize: len(data),
-	}
-
+	q := gowave.NewQuery(data)
 	return q
 }

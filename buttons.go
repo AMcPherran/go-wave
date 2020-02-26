@@ -6,7 +6,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
-const ButtonEventID = 2
+const ButtonEventID uint8 = 4
 
 type ButtonEvent struct {
 	ID        string
@@ -14,19 +14,20 @@ type ButtonEvent struct {
 	Timestamp int64
 }
 
-func NewButtonEvent(data []byte) (ButtonEvent, error) {
+func NewButtonEvent(q Query) (ButtonEvent, error) {
 	var be ButtonEvent
-	if data[0] != ButtonEventID {
+	if q.ID != "ButtonEvent" {
 		return be, xerrors.Errorf("Input was not a button event")
 	}
 	be = ButtonEvent{
-		ID:        ButtonIDs[data[4]],
-		Action:    ButtonActions[data[5]],
+		ID:        ButtonIDs[q.Payload[2]],
+		Action:    ButtonActions[q.Payload[3]],
 		Timestamp: time.Now().Unix(),
 	}
 	return be, nil
 }
 
+//
 var ButtonIDs = map[uint8]string{
 	0: "A",
 	1: "B",
@@ -34,6 +35,7 @@ var ButtonIDs = map[uint8]string{
 	3: "D",
 }
 
+//
 var ButtonActions = map[uint8]string{
 	0: "Up",
 	1: "Down",
