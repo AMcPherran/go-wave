@@ -47,14 +47,6 @@ func Connect() (*Wave, error) {
 		return nil, err
 	}
 
-	// Normally, the connection is disconnected by us after our exploration.
-	// However, it can be asynchronously disconnected by the remote peripheral.
-	// So we wait(detect) the disconnection in the go routine.
-	go func() {
-		<-client.Disconnected()
-		fmt.Printf("Disconnected from %s\n", client.Addr())
-	}()
-
 	profile, err := client.DiscoverProfile(true)
 	if err != nil {
 		return nil, err

@@ -8,6 +8,12 @@ import (
 	gowave "github.com/AMcPherran/go-wave"
 )
 
+var buttonStates = map[string]bool{
+	"A": false,
+	"B": false,
+	"C": false,
+}
+
 func main() {
 	flag.Parse()
 
@@ -64,9 +70,23 @@ func handleNotifications(data []byte) {
 }
 
 func handleDatastream(ds gowave.Datastream) {
-	//fmt.Println(ds)
+	// Print out the Euler vector if the B button is held down
+	if buttonStates["B"] {
+		fmt.Println(ds.MotionData.Euler)
+	}
+	if buttonStates["A"] {
+		fmt.Println(ds.MotionData.CurrentPos)
+	}
+	if buttonStates["C"] {
+		fmt.Println(ds.Data.Accel)
+	}
 }
 
 func handleButtonEvent(be gowave.ButtonEvent) {
 	fmt.Println(be)
+	if be.Action == "Up" || be.Action == "ExtraLongUp" || be.Action == "LongUp" {
+		buttonStates[be.ID] = false
+	} else if be.Action == "Down" {
+		buttonStates[be.ID] = true
+	}
 }
