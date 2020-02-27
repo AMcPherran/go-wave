@@ -17,11 +17,11 @@ type ButtonEvent struct {
 func NewButtonEvent(q Query) (ButtonEvent, error) {
 	var be ButtonEvent
 	if q.ID != "ButtonEvent" {
-		return be, xerrors.Errorf("Input was not a button event")
+		return be, xerrors.Errorf("Given Query was not a button event")
 	}
 	be = ButtonEvent{
-		ID:        ButtonIDs[q.Payload[2]],
-		Action:    ButtonActions[q.Payload[3]],
+		ID:        ButtonIDs[q.Payload[0]],
+		Action:    ButtonActions[q.Payload[1]],
 		Timestamp: time.Now().Unix(),
 	}
 	return be, nil

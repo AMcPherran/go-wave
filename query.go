@@ -1,21 +1,39 @@
 package gowave
 
+import (
+	"bytes"
+	"encoding/binary"
+
+	"golang.org/x/xerrors"
+)
+
 type Query struct {
 	ID          string
 	Type        string
-	PayloadSize int
+	PayloadSize uint64
 	Payload     []byte
 }
 
-func NewQuery(data []byte) Query {
-	payload := data[2:]
-	q := Query{
+func NewQuery(data []byte) (Query, error) {
+	var q Query
+	buf := bytes.NewBuffer(data[2:3])
+	payloadSize, err := binary.ReadUvarint(buf)
+	if err != nil {
+		return q, xerrors.Errorf("Failed to decode payload size bytes, message is likely corrupted: ", err)
+	}
+	payload := data[4:]
+	q = Query{
 		ID:          QueryIDs[data[1]],
 		Type:        QueryTypes[data[0]],
-		PayloadSize: len(payload),
+		PayloadSize: payloadSize,
 		Payload:     payload,
 	}
-	return q
+	if int(payloadSize) != len(payload) {
+		err := xerrors.Errorf("Length of the payload did not match expected size, expected %d bytes received %d", payloadSize, len(payload))
+		return q, err
+	}
+
+	return q, nil
 }
 
 var QueryIDs = map[uint8]string{

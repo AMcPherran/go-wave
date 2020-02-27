@@ -46,6 +46,12 @@ func main() {
 	}
 	fmt.Printf("Connected to Wave %s\n", client.Addr())
 
+	// Set the MTU to 128 (Max used by Wave)
+	_, err = client.ExchangeMTU(128)
+	if err != nil {
+		log.Fatalf("Failed to set MTU to 128: %s", err)
+	}
+
 	// Make sure we had the chance to print out the message.
 	done := make(chan struct{})
 	// Normally, the connection is disconnected by us after our exploration.
@@ -107,14 +113,15 @@ func getService(cln ble.Client, p *ble.Profile) *ble.Service {
 
 func handleNotifications(data []byte) {
 	// Parse the incoming data into a Query
-	q := decodeByteStream(data)
+	q, _ := gowave.NewQuery(data)
 	// Handle the query
 	switch q.ID {
 	case "ButtonEvent":
 		buttonEvent, _ := gowave.NewButtonEvent(q)
 		handleButtonEvent(buttonEvent)
 	case "Datastream":
-		handleDatastream(q)
+		dataStream, _ := gowave.NewDatastream(q)
+		handleDatastream(dataStream)
 	case "BatteryStatus":
 		fmt.Println(q.Payload)
 	case "DeviceInfo":
@@ -132,7 +139,7 @@ func handleNotifications(data []byte) {
 	}
 }
 
-func handleDatastream(q gowave.Query) {
+func handleDatastream(ds gowave.Datastream) {
 	//fmt.Println(q.Payload)
 }
 
