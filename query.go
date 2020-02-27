@@ -36,6 +36,20 @@ func NewQuery(data []byte) (Query, error) {
 	return q, nil
 }
 
+func (q Query) ToBytes() []byte {
+	data := make([]byte, 2)
+	data[0] = ReverseQueryIDs[q.ID]
+	data[1] = ReverseQueryTypes[q.Type]
+	// Payload size conversion
+	ps := make([]byte, binary.MaxVarintLen64)
+	n := binary.PutVarint(ps, int64(q.PayloadSize))
+	b := ps[:n]
+	//
+	data = append(data, b...)
+	data = append(data, q.Payload...)
+	return data
+}
+
 var QueryIDs = map[uint8]string{
 	0:             "Unknown",
 	DatastreamID:  "Datastream",
@@ -49,10 +63,31 @@ var QueryIDs = map[uint8]string{
 	9:             "MAX_VAL",
 }
 
+var ReverseQueryIDs = map[string]uint8{
+	"Unknown":       0,
+	"Datastream":    DatastreamID,
+	"BatteryStatus": 2,
+	"DeviceInfo":    3,
+	"ButtonEvent":   ButtonEventID,
+	"DeviceMode":    5,
+	"Identify":      6,
+	"Recenter":      7,
+	"DisplayFrame":  8,
+	"MAX_VAL":       9,
+}
+
 var QueryTypes = map[uint8]string{
 	0: "Unknown",
 	1: "Request",
 	2: "Response",
 	3: "Stream",
 	4: "MAX_VAL",
+}
+
+var ReverseQueryTypes = map[string]uint8{
+	"Unknown":  0,
+	"Request":  1,
+	"Response": 2,
+	"Stream":   3,
+	"MAX_VAL":  4,
 }

@@ -50,11 +50,9 @@ func Connect() (*Wave, error) {
 	// Normally, the connection is disconnected by us after our exploration.
 	// However, it can be asynchronously disconnected by the remote peripheral.
 	// So we wait(detect) the disconnection in the go routine.
-	//disconnect := make(chan struct{})
 	go func() {
 		<-client.Disconnected()
-		fmt.Printf("Disconnecting from Wave %s\n", client.Addr())
-		//close(disconnect)
+		fmt.Printf("Disconnected from %s\n", client.Addr())
 	}()
 
 	profile, err := client.DiscoverProfile(true)
@@ -91,6 +89,7 @@ func Connect() (*Wave, error) {
 }
 
 func (w Wave) Disconnect() error {
+	_ = w.BLE.Client.ClearSubscriptions()
 	err := w.BLE.Client.CancelConnection()
 	return err
 }
