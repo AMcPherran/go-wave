@@ -38,8 +38,8 @@ func NewQuery(data []byte) (Query, error) {
 
 func (q Query) ToBytes() []byte {
 	data := make([]byte, 2)
-	data[0] = ReverseQueryIDs[q.ID]
-	data[1] = ReverseQueryTypes[q.Type]
+	data[1] = ReverseQueryIDs[q.ID]
+	data[0] = ReverseQueryTypes[q.Type]
 	// Payload size conversion
 	ps := make([]byte, 2)
 	binary.LittleEndian.PutUint16(ps, uint16(q.PayloadSize))
