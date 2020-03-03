@@ -10,7 +10,7 @@ import (
 type Query struct {
 	ID          string
 	Type        string
-	PayloadSize uint64
+	PayloadSize uint16
 	Payload     []byte
 }
 
@@ -25,7 +25,7 @@ func NewQuery(data []byte) (Query, error) {
 	q = Query{
 		ID:          QueryIDs[data[1]],
 		Type:        QueryTypes[data[0]],
-		PayloadSize: payloadSize,
+		PayloadSize: uint16(payloadSize),
 		Payload:     payload,
 	}
 	if int(payloadSize) != len(payload) {
@@ -41,11 +41,10 @@ func (q Query) ToBytes() []byte {
 	data[0] = ReverseQueryIDs[q.ID]
 	data[1] = ReverseQueryTypes[q.Type]
 	// Payload size conversion
-	ps := make([]byte, binary.MaxVarintLen64)
-	n := binary.PutVarint(ps, int64(q.PayloadSize))
-	b := ps[:n]
+	ps := make([]byte, 2)
+	binary.LittleEndian.PutUint16(ps, uint16(q.PayloadSize))
 	//
-	data = append(data, b...)
+	data = append(data, ps...)
 	data = append(data, q.Payload...)
 	return data
 }

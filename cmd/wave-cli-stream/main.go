@@ -24,6 +24,8 @@ func main() {
 
 	go handleInbound(wave)
 
+	testDisplay(wave)
+
 	<-wave.BLE.Client.Disconnected()
 	// Disconnect the connection
 	wave.Disconnect()
@@ -88,5 +90,21 @@ func handleButtonEvent(be gowave.ButtonEvent) {
 		buttonStates[be.ID] = false
 	} else if be.Action == "Down" {
 		buttonStates[be.ID] = true
+	}
+}
+
+func sendRecenter(wave *gowave.Wave) {
+	q := gowave.GetRecenterQuery()
+	err := wave.SendQuery(q)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func testDisplay(wave *gowave.Wave) {
+	q := gowave.GetTestDisplayQuery()
+	err := wave.SendQuery(q)
+	if err != nil {
+		fmt.Println(err)
 	}
 }

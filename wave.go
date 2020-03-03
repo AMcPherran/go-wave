@@ -21,7 +21,7 @@ type Wave struct {
 }
 
 func Connect() (*Wave, error) {
-	d, err := dev.NewDevice("WaveClient")
+	d, err := dev.NewDevice("WaveCli")
 	if err != nil {
 		return nil, err
 	}
@@ -93,6 +93,12 @@ func (w Wave) Subscribe(handler ble.NotificationHandler) error {
 
 func (w Wave) Unsubscribe() error {
 	err := w.BLE.Client.Unsubscribe(w.BLE.Characteristic, false)
+	return err
+}
+
+func (w Wave) SendQuery(q Query) error {
+	b := q.ToBytes()
+	err := w.BLE.Client.WriteCharacteristic(w.BLE.Characteristic, b, true)
 	return err
 }
 
