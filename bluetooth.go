@@ -9,3 +9,11 @@ type BLE struct {
 	Characteristic *ble.Characteristic
 	Disconnect     chan struct{}
 }
+
+func getService(cln ble.Client, p *ble.Profile) *ble.Service {
+	service := p.FindService(&ble.Service{
+		UUID: ble.MustParse(ApiServiceUUID),
+	})
+
+	return service
+}

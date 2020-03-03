@@ -4,15 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"time"
 
 	gowave "github.com/AMcPherran/go-wave"
 )
 
-var buttonStates = map[string]bool{
-	"A": false,
-	"B": false,
-	"C": false,
-}
+var waveState gowave.WaveState
 
 func main() {
 	flag.Parse()
@@ -22,91 +19,55 @@ func main() {
 		log.Fatalf("Failed to connect to Wave: %s", err)
 	}
 
-	go handleInbound(wave)
+	if err := wave.HandleNotifications(); err != nil {
+		log.Fatalf("subscribe failed: %s", err)
+	}
+	log.Printf("Receiving incoming data from Wave")
 
-	testDisplay(wave)
+	// Main loop for reading and acting on wave.State
+	var lastState gowave.WaveState
+	for true {
+		middleButton := wave.State.Buttons.Middle()
+		btnAction := middleButton.Action
+		// Only update the display and recenter if the button state changed
+		if middleButton != lastState.Buttons.Middle() {
+			// If the Button has been released, blank the display
+			if btnAction == "Up" || btnAction == "LongUp" || btnAction == "ExtraLongUp" {
+				frame := gowave.BlankDisplayFrame()
+				wave.SetDisplay(frame)
+			}
+			// If the Button was pressed down, display a dot and recenter
+			if btnAction == "Down" {
+				frame := [][]byte{
+					{000, 000, 000, 000, 000, 000, 000, 000, 000},
+					{000, 000, 000, 000, 255, 000, 000, 000, 000},
+					{000, 000, 000, 255, 255, 255, 000, 000, 000},
+					{000, 000, 000, 000, 255, 000, 000, 000, 000},
+					{000, 000, 000, 000, 000, 000, 000, 000, 000},
+				}
+				wave.SetDisplay(frame)
+				wave.Recenter()
+			}
+			lastState.Buttons.Set(middleButton)
+		} else {
+			// While the button is held down, print the current motion data
+			if btnAction == "Down" || btnAction == "Long" || btnAction == "ExtraLong" {
+				md := wave.State.GetMotionData()
+				fmt.Println(md.Euler)
+			}
+		}
 
-	sendRecenter(wave)
+		time.Sleep(500 * time.Microsecond)
+	}
 
 	<-wave.BLE.Client.Disconnected()
+	log.Printf("Wave is disconnecting")
 	// Disconnect the connection
 	wave.Disconnect()
 }
 
-func handleInbound(wave *gowave.Wave) {
-	// Subscribe to incoming data
-	if err := wave.Subscribe(handleNotifications); err != nil {
-		log.Fatalf("subscribe failed: %s", err)
-	}
-	log.Printf("Receiving incoming data from Wave")
-	<-wave.BLE.Client.Disconnected()
-	log.Printf("Wave is disconnecting")
-}
-
-func handleNotifications(data []byte) {
-	// Parse the incoming data into a Query
-	q, _ := gowave.NewQuery(data)
-	// Handle the query
-	switch q.ID {
-	case "ButtonEvent":
-		buttonEvent, _ := gowave.NewButtonEvent(q)
-		handleButtonEvent(buttonEvent)
-	case "Datastream":
-		dataStream, _ := gowave.NewDatastream(q)
-		handleDatastream(dataStream)
-	case "BatteryStatus":
-		fmt.Println(q.Payload)
-	case "DeviceInfo":
-		fmt.Println(q.Payload)
-	case "DeviceMode":
-		fmt.Println(q.Payload)
-	case "Identify":
-		fmt.Println(q.Payload)
-	case "Recenter":
-		fmt.Println(q.Payload)
-	case "DisplayFrame":
-		fmt.Println(q.Payload)
-	case "MAX_VAL":
-		fmt.Println(q.Payload)
-	default:
-		fmt.Println(q.Payload)
-	}
-}
-
-func handleDatastream(ds gowave.Datastream) {
-	// Print out the Euler vector if the B button is held down
-	if buttonStates["B"] {
-		fmt.Println(ds.MotionData.Euler)
-	}
-	if buttonStates["A"] {
-		fmt.Println(ds.MotionData.CurrentPos)
-	}
-	if buttonStates["C"] {
-		fmt.Println(ds.Data.Accel)
-	}
-}
-
-func handleButtonEvent(be gowave.ButtonEvent) {
-	fmt.Println(be)
-	if be.Action == "Up" || be.Action == "ExtraLongUp" || be.Action == "LongUp" {
-		buttonStates[be.ID] = false
-	} else if be.Action == "Down" {
-		buttonStates[be.ID] = true
-	}
-}
-
-func sendRecenter(wave *gowave.Wave) {
-	q := gowave.GetRecenterQuery()
-	fmt.Println(q.ToBytes())
-	err := wave.SendQuery(q)
-	if err != nil {
-		fmt.Println(err)
-	}
-}
-
 func testDisplay(wave *gowave.Wave) {
 	q := gowave.GetTestDisplayQuery()
-	fmt.Println(q.ToBytes())
 	err := wave.SendQuery(q)
 	if err != nil {
 		fmt.Println(err)

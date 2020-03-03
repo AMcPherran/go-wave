@@ -1,0 +1,11 @@
+WaveState struct
+
+WaveState {
+  SensorData
+  MotionData
+  Buttons
+  Display
+}
+
+Thread-safe struct with getters and setters
+Constantly update state with ButtonEvents, etc. as they arrive in Notification stream

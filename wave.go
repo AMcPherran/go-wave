@@ -17,7 +17,8 @@ const ApiServiceUUID = "f3402bdcd01711e9bb652a2ae2dbcce4"
 const ApiCharacteristicUUID = "f3402ea2d01711e9bb652a2ae2dbcce4"
 
 type Wave struct {
-	BLE BLE
+	BLE   BLE
+	State WaveState
 }
 
 func Connect() (*Wave, error) {
@@ -80,32 +81,61 @@ func Connect() (*Wave, error) {
 	return &wave, nil
 }
 
-func (w Wave) Disconnect() error {
+func (w *Wave) Disconnect() error {
 	_ = w.BLE.Client.ClearSubscriptions()
 	err := w.BLE.Client.CancelConnection()
 	return err
 }
 
-func (w Wave) Subscribe(handler ble.NotificationHandler) error {
+func (w *Wave) HandleNotifications() error {
+	err := w.Subscribe(w.defaultNotificationHandler)
+	return err
+}
+
+func (w *Wave) Subscribe(handler ble.NotificationHandler) error {
 	err := w.BLE.Client.Subscribe(w.BLE.Characteristic, false, handler)
 	return err
 }
 
-func (w Wave) Unsubscribe() error {
+func (w *Wave) Unsubscribe() error {
 	err := w.BLE.Client.Unsubscribe(w.BLE.Characteristic, false)
 	return err
 }
 
-func (w Wave) SendQuery(q Query) error {
+func (w *Wave) SendQuery(q Query) error {
 	b := q.ToBytes()
 	err := w.BLE.Client.WriteCharacteristic(w.BLE.Characteristic, b, true)
 	return err
 }
 
-func getService(cln ble.Client, p *ble.Profile) *ble.Service {
-	service := p.FindService(&ble.Service{
-		UUID: ble.MustParse(ApiServiceUUID),
-	})
-
-	return service
+// Default handler for Notifications, updates w.WaveState
+func (w *Wave) defaultNotificationHandler(data []byte) {
+	// Parse the incoming data into a Query
+	q, _ := NewQuery(data)
+	// Handle the query
+	switch q.ID {
+	case "ButtonEvent":
+		buttonEvent, _ := NewButtonEvent(q)
+		w.State.Buttons.Set(buttonEvent)
+	case "Datastream":
+		dataStream, _ := NewDatastream(q)
+		w.State.SetMotionData(dataStream.MotionData)
+		w.State.SetSensorData(dataStream.Data)
+	case "BatteryStatus":
+		fmt.Println(q.Payload)
+	case "DeviceInfo":
+		fmt.Println(q.Payload)
+	case "DeviceMode":
+		fmt.Println(q.Payload)
+	case "Identify":
+		fmt.Println(q.Payload)
+	case "Recenter":
+		fmt.Println(q.Payload)
+	case "DisplayFrame":
+		fmt.Println(q.Payload)
+	case "MAX_VAL":
+		fmt.Println(q.Payload)
+	default:
+		fmt.Println(q.Payload)
+	}
 }
