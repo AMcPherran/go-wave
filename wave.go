@@ -41,6 +41,7 @@ func Connect() (*Wave, error) {
 	ctx := ble.WithSigHandler(context.WithTimeout(context.Background(), ScanDuration*time.Second))
 	client, err := ble.Connect(ctx, filter)
 	if err != nil {
+		device.Stop()
 		return nil, err
 	}
 	fmt.Printf("Connected to Wave %s\n", client.Addr())
