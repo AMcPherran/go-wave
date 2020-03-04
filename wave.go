@@ -16,6 +16,8 @@ const ScanDuration = 30
 const ApiServiceUUID = "f3402bdcd01711e9bb652a2ae2dbcce4"
 const ApiCharacteristicUUID = "f3402ea2d01711e9bb652a2ae2dbcce4"
 
+var device ble.Device
+
 type Wave struct {
 	BLE   BLE
 	State WaveState
@@ -27,6 +29,7 @@ func Connect() (*Wave, error) {
 		return nil, err
 	}
 	ble.SetDefaultDevice(d)
+	device = d
 
 	// Search for devices named "Wave"
 	filter := func(a ble.Advertisement) bool {
@@ -84,6 +87,7 @@ func Connect() (*Wave, error) {
 func (w *Wave) Disconnect() error {
 	_ = w.BLE.Client.ClearSubscriptions()
 	err := w.BLE.Client.CancelConnection()
+	device.Stop()
 	return err
 }
 

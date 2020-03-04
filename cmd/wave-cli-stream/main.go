@@ -9,8 +9,6 @@ import (
 	gowave "github.com/AMcPherran/go-wave"
 )
 
-var waveState gowave.WaveState
-
 func main() {
 	flag.Parse()
 
@@ -64,12 +62,4 @@ func main() {
 	log.Printf("Wave is disconnecting")
 	// Disconnect the connection
 	wave.Disconnect()
-}
-
-func testDisplay(wave *gowave.Wave) {
-	q := gowave.GetTestDisplayQuery()
-	err := wave.SendQuery(q)
-	if err != nil {
-		fmt.Println(err)
-	}
 }
