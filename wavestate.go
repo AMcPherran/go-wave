@@ -7,6 +7,7 @@ type WaveState struct {
 	sensorData SensorData
 	motionData MotionData
 	Buttons    ButtonState
+	battery    BatteryStatus
 	mux        sync.Mutex
 }
 
@@ -36,6 +37,19 @@ func (ws *WaveState) GetMotionData() MotionData {
 	ws.mux.Lock()
 	defer ws.mux.Unlock()
 	return ws.motionData
+}
+
+// BatteryStatus setter and getter
+func (ws *WaveState) SetBatteryStatus(bs BatteryStatus) {
+	ws.mux.Lock()
+	ws.battery = bs
+	ws.mux.Unlock()
+}
+
+func (ws *WaveState) GetBatteryStatus() BatteryStatus {
+	ws.mux.Lock()
+	defer ws.mux.Unlock()
+	return ws.battery
 }
 
 // Concurrency-safe button handling

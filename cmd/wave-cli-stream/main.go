@@ -34,7 +34,7 @@ func main() {
 				frame := gowave.BlankDisplayFrame()
 				wave.SetDisplay(frame)
 			}
-			// If the Button was pressed down, display a dot and recenter
+			// If the Button was pressed down, display a dot, recenter, and request BatteryStatus
 			if btnAction == "Down" {
 				frame := [][]byte{
 					{000, 000, 000, 000, 000, 000, 000, 000, 000},
@@ -43,15 +43,38 @@ func main() {
 					{000, 000, 000, 000, 255, 000, 000, 000, 000},
 					{000, 000, 000, 000, 000, 000, 000, 000, 000},
 				}
-				wave.SetDisplay(frame)
-				wave.Recenter()
+				err := wave.SetDisplay(frame)
+				if err != nil {
+					fmt.Println(err)
+				}
+				err = wave.Recenter()
+				if err != nil {
+					fmt.Println(err)
+				}
+				err = wave.SendBatteryStatusRequest()
+				if err != nil {
+					fmt.Println(err)
+				}
+				bs := wave.State.GetBatteryStatus()
+				fmt.Println(bs)
 			}
 			lastState.Buttons.Set(middleButton)
 		} else {
 			// While the button is held down, print the current motion data
-			if btnAction == "Down" || btnAction == "Long" || btnAction == "ExtraLong" {
+			if btnAction == "Long" || btnAction == "ExtraLong" {
 				md := wave.State.GetMotionData()
 				fmt.Println(md.Euler)
+				frame := [][]byte{
+					{000, 000, 000, 000, 000, 000, 000, 000, 000},
+					{000, 000, 000, 255, 255, 255, 000, 000, 000},
+					{000, 000, 255, 255, 255, 255, 255, 000, 000},
+					{000, 000, 000, 255, 255, 255, 000, 000, 000},
+					{000, 000, 000, 000, 000, 000, 000, 000, 000},
+				}
+				err := wave.SetDisplay(frame)
+				if err != nil {
+					fmt.Println(err)
+				}
 			}
 		}
 

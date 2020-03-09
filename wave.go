@@ -127,7 +127,8 @@ func (w *Wave) defaultNotificationHandler(data []byte) {
 		w.State.SetMotionData(dataStream.MotionData)
 		w.State.SetSensorData(dataStream.Data)
 	case "BatteryStatus":
-		fmt.Println(q.Payload)
+		batteryStatus, _ := NewBatteryStatus(q)
+		w.State.SetBatteryStatus(batteryStatus)
 	case "DeviceInfo":
 		fmt.Println(q.Payload)
 	case "DeviceMode":
