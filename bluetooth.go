@@ -1,6 +1,10 @@
 package gowave
 
-import "github.com/go-ble/ble"
+import (
+	"sync"
+
+	"github.com/go-ble/ble"
+)
 
 // Struct for organizing the low-level BLE interfaces under the Wave
 type BLE struct {
@@ -8,6 +12,7 @@ type BLE struct {
 	Profile        *ble.Profile
 	Characteristic *ble.Characteristic
 	Disconnect     chan struct{}
+	mux            sync.Mutex
 }
 
 func getService(cln ble.Client, p *ble.Profile) *ble.Service {

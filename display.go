@@ -5,6 +5,11 @@ type Pixel struct {
 	Y uint8
 }
 
+type DisplayState struct {
+	Frame     [][]byte
+	Timestamp int64
+}
+
 func GetTestDisplayQuery() Query {
 	// Default API frame
 	frame := [][]byte{
@@ -62,5 +67,11 @@ func GetDisplayFrameQuery(frame [][]byte) Query {
 func (w *Wave) SetDisplay(frame [][]byte) error {
 	q := GetDisplayFrameQuery(frame)
 	err := w.SendQuery(q)
+	// if err == nil {
+	// 	w.State.SetDisplayState(DisplayState{
+	// 		Frame:     frame,
+	// 		Timestamp: time.Now().Unix(),
+	// 	})
+	// }
 	return err
 }

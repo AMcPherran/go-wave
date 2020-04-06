@@ -1,6 +1,10 @@
 package gowave
 
-import "golang.org/x/xerrors"
+import (
+	"time"
+
+	"golang.org/x/xerrors"
+)
 
 func GetBatteryStatusQuery() Query {
 	q := Query{
@@ -22,6 +26,7 @@ type BatteryStatus struct {
 	Voltage    float32 `json:"voltage"`
 	Percentage float32 `json:"percentage"`
 	Charging   bool    `json:"charging"`
+	Timestamp  int64   `json:"timestamp"`
 }
 
 func NewBatteryStatus(q Query) (BatteryStatus, error) {
@@ -33,6 +38,7 @@ func NewBatteryStatus(q Query) (BatteryStatus, error) {
 		Voltage:    Float32frombytes(q.Payload[0:4]),
 		Percentage: Float32frombytes(q.Payload[4:8]),
 		Charging:   bool(q.Payload[8] == 1),
+		Timestamp:  time.Now().Unix(),
 	}
 	return bs, nil
 }

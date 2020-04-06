@@ -24,7 +24,7 @@ type Wave struct {
 }
 
 func Connect() (*Wave, error) {
-	d, err := dev.NewDevice("WaveCli")
+	d, err := dev.NewDevice("default")
 	if err != nil {
 		return nil, err
 	}
@@ -86,9 +86,9 @@ func Connect() (*Wave, error) {
 }
 
 func (w *Wave) Disconnect() error {
-	_ = w.BLE.Client.ClearSubscriptions()
-	err := w.BLE.Client.CancelConnection()
-	device.Stop()
+	err := w.BLE.Client.ClearSubscriptions()
+	err = w.BLE.Client.CancelConnection()
+	err = device.Stop()
 	return err
 }
 
@@ -109,7 +109,9 @@ func (w *Wave) Unsubscribe() error {
 
 func (w *Wave) SendQuery(q Query) error {
 	b := q.ToBytes()
+	w.BLE.mux.Lock()
 	err := w.BLE.Client.WriteCharacteristic(w.BLE.Characteristic, b, true)
+	w.BLE.mux.Unlock()
 	return err
 }
 

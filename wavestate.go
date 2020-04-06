@@ -2,11 +2,12 @@ package gowave
 
 import "sync"
 
-// Conccurrency-safe struct for tracking state of the Wave
+// Concurrency-safe struct for managing state of the Wave
 type WaveState struct {
 	sensorData SensorData
 	motionData MotionData
 	Buttons    ButtonState
+	display    DisplayState
 	battery    BatteryStatus
 	mux        sync.Mutex
 }
@@ -50,6 +51,19 @@ func (ws *WaveState) GetBatteryStatus() BatteryStatus {
 	ws.mux.Lock()
 	defer ws.mux.Unlock()
 	return ws.battery
+}
+
+// DisplayState setter and getter
+func (ws *WaveState) SetDisplayState(ds DisplayState) {
+	ws.mux.Lock()
+	ws.display = ds
+	ws.mux.Unlock()
+}
+
+func (ws *WaveState) GetDisplayState() DisplayState {
+	ws.mux.Lock()
+	defer ws.mux.Unlock()
+	return ws.display
 }
 
 // Concurrency-safe button handling
